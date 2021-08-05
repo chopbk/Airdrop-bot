@@ -6,6 +6,7 @@
 const mongoose = require("mongoose");
 const logger = require("../utils/logger");
 const AccountSchema = require("./schemas/account.schema");
+const ContactInfoSchema = require("./schemas/contact-info.schema");
 class MongoDb {
     constructor() {}
     async init() {
@@ -23,6 +24,10 @@ class MongoDb {
             logger.debug("[mongoLoader] connect to " + url);
             await mongoose.connect(url, options);
             this.AccountModel = mongoose.model("account", AccountSchema);
+            this.ContactInfoModel = mongoose.model(
+                "contact_info",
+                ContactInfoSchema
+            );
         } catch (error) {
             throw error;
         }
@@ -30,6 +35,9 @@ class MongoDb {
     }
     getAccountModel() {
         return this.AccountModel;
+    }
+    getContactInfoModel() {
+        return this.ContactInfoModel;
     }
 }
 module.exports = new MongoDb();
