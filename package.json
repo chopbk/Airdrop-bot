@@ -1,0 +1,30 @@
+{
+  "name": "create_telegram_bot",
+  "version": "1.0.0",
+  "description": "telegram bot for creator project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "set NODE_ENV=dev&&set LOGGER=debug&&nodemon index.js --ignore *test/  --ignore *config/"
+  },
+  "keywords": [
+    "telegram",
+    "bot",
+    "creator",
+    "bot"
+  ],
+  "author": "vmo",
+  "license": "ISC",
+  "dependencies": {
+    "circular-json": "^0.5.9",
+    "dotenv": "^10.0.0",
+    "mongoose": "^5.13.5",
+    "node-telegram-bot-api": "^0.54.0",
+    "telegraf": "^4.4.1",
+    "telegraf-ratelimit": "^2.0.0",
+    "telegraf-stateless-question": "^2.0.1",
+    "twitter-api-v2": "^1.2.0",
+    "winston": "^3.3.3",
+    "winston-daily-rotate-file": "^4.5.5"
+  }
+}
