@@ -1,7 +1,6 @@
 const listText = require("../utils/list-text");
 const logger = require("../utils/logger");
 const { checkTwitter, getIdByUsername } = require("../utils/twitter");
-const Excel = require("exceljs");
 //1932545436:AAG9ee17RzDtKM6_E3u4WzHOTA7On5O2QVI
 const TelegramBot = require("node-telegram-bot-api");
 const {
