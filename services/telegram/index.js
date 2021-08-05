@@ -22,10 +22,6 @@ const {
     STEP_VERIFY,
 } = require("../database/model");
 
-const linkPostTwiiter = process.env.POST_TWEETER;
-const linkChanelTele = process.env.LINK_CHANEL;
-const linkGroupTele = process.env.LINK_GROUP;
-
 const excludedText = [
     listText.keyRules,
     listText.keyInfo,
@@ -127,7 +123,8 @@ class TeleBot {
         if (msg.from.is_bot) {
             return false;
         }
-        const ref = msg.text.replace("/start", "").trim();
+        let ref = msg.text.replace("/start", "").trim();
+        if (isNaN(ref)) ref = null;
         // find account exist on Database
         let account = await getAccountInfo(msg.from.id);
         if (!account)
@@ -425,8 +422,12 @@ class TeleBot {
         if (!idTw) return { status: false, message: listText.twNotUser };
         return { status: true, message: "Done mission" };
     };
-
-    checkStepTwitter = async (userId) => {
+    checkFollowTwitter = async (userId) => {
+        const idTw = await getIDTwitter(userId);
+        if (!idTw) return { status: false, message: listText.twNotUser };
+        return { status: true, message: "Done mission" };
+    };
+    checkLikeRetweetTwitter = async (userId) => {
         const idTw = await getIDTwitter(userId);
         if (!idTw) return { status: false, message: listText.twNotUser };
         return { status: true, message: "Done mission" };
@@ -452,18 +453,43 @@ class TeleBot {
         const listStepDone = {
             0: await this.checkFollowChanel(userId),
             1: await this.checkJoinGr(userId),
-            3: await this.checkBindTwitter(userId),
+            2: await this.checkFollowTwitter(userId),
+            3: await this.checkLikeRetweetTwitter(userId),
+            4: await this.checkBindTwitter(userId),
         };
-        if (listStepDone[0].status && listStepDone[1].status) {
-            listStepDone[2] = await this.checkStepTwitter(userId);
-        }
+        logger.debug(`[buildButtonStep] `);
+        logger.debug(listStepDone);
+        // if (listStepDone[0].status && listStepDone[1].status) {
+        //     listStepDone[2] = await this.checkStepTwitter(userId);
+        // }
 
         const tempStep = {
             reply_markup: {
                 inline_keyboard: [
-                    [{ text: listText.step1, url: linkChanelTele }],
-                    [{ text: listText.step2, url: linkGroupTele }],
-                    [{ text: listText.step3, url: linkPostTwiiter }],
+                    [
+                        {
+                            text: listText.step1,
+                            url: this.contactInfo.telegram_channel,
+                        },
+                    ],
+                    [
+                        {
+                            text: listText.step2,
+                            url: this.contactInfo.telegram_group,
+                        },
+                    ],
+                    [
+                        {
+                            text: listText.step3,
+                            url: this.contactInfo.twitter,
+                        },
+                    ],
+                    [
+                        {
+                            text: listText.step4,
+                            url: this.contactInfo.twitter_tweet,
+                        },
+                    ],
                     [
                         {
                             text: listText.enterUser,

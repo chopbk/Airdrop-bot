@@ -12,11 +12,12 @@ module.exports = {
     welcome: `Welcome to *Creator’s chain Reward Bot*!
     \n*About Creator’s chain*
     \n*Creator’s chain* is based on the Polkadot/Substrate which provides true interoperability,user-driven network governance and customizations that focus on Defi and Smart contracts.
-        \n👇Click Button bellow to get Airdrop and Contact`,
+        \n👇Click Button bellow to get Airdrop and Creator Infos`,
     step1: "1. Follow Chanel Creator Announcement",
     step2: "2. Join Group Creator Official [ENG]",
-    step3: "3. Follow, Retweet, Like Creator Twitter",
-    enterUser: `4. Enter your twitter account before ${check}`,
+    step3: "3. Follow Creator Twitter",
+    step4: "4. Retweet, Like Creator Twitter post",
+    enterUser: `5. Click here to enter your twitter account before ${check}`,
     check,
     refresh,
     keyAirdrop,
@@ -33,7 +34,7 @@ module.exports = {
     \n*About Creator’s chain*
     \n*Creator’s chain* is based on the Polkadot/Substrate which provides true interoperability,user-driven network governance and customizations that focus on Defi and Smart contracts.
         \n➡️ Before we start the airdrop, please prove you are human by answering the question below
-        *Please answer ${first} + ${second} = * \n\n👇 **Click Answer button bellow**`,
+        *Please answer ${first} + ${second} = * \n\n👇 *Click Answer button bellow*`,
     answer: `✅ Okey. Now enter the answer!`,
     banned: `\n⚠️ Your have banned by our policy. Please contact admin for help`,
     desHelp: (info) => `All contact information:
