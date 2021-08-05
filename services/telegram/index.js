@@ -262,7 +262,10 @@ class TeleBot {
                 // handle start
             }
             if (step === STEP_USERNAME) {
-                if (msg.text[0] !== "@") {
+                let re = new RegExp(`^@[A-Za-z0-9_]{1,15}$`);
+                let isTwitterValid = re.test(msg.text);
+                if (!isTwitterValid) {
+                    logger.debug(`[checkValidTwitter]: ${isTwitterValid}`);
                     return this.bot.sendMessage(
                         msg.chat.id,
                         listText.validTwiiter
