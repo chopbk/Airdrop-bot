@@ -60,12 +60,12 @@ Press 👇 *${check}* to check completed tasks.`;
 You can check again by click keyboard *${keyWallet}*.
 See more information or need help, click keyboard *${keyRules}*.`;
     },
-    done: (id) => {
+    done: (id, botUserName) => {
         return `🎉 Congratulations for completing all the tasks.
-\n📢 Airdrop rewards will be distributed in June 30th. 1000 Luckly participants will be rewards
+\n📢 Airdrop rewards will be distributed in Auguest 30th. 1000 Luckly participants will be rewards
 \n💵 Set your wallet address to receive rewards at *${keyWallet}*.
 \n👏 You can earn 2 Creator tokens for each refferral by inviting other users up to 50 referrals.
-\n🔗 Your referral link：https://t.me/test\\_creator\\_chain\\_airdrop\\_bot?start=${id}
+\n🔗 Your referral link：*https://t.me/${botUserName}?start=${id}*
 \n⚠️ We will mannually check the participants, mandatory task must be completed. Unfinished will not get any tokens
         `;
     },
@@ -80,7 +80,7 @@ See more information or need help, click keyboard *${keyRules}*.`;
             return `❌(Not found, click *${keyWallet}* to set your wallet)`;
         return `*${info.wallet_address}*`;
     },
-    infoButton: (info, taskPoint, refAccounts, textWl) => {
+    infoButton: (info, botUserName, refAccounts, textWl) => {
         let refPoint = refAccounts.length;
         let nameAccounts = "";
         refAccounts.forEach(
@@ -90,7 +90,7 @@ See more information or need help, click keyboard *${keyRules}*.`;
 \n💵 ERC-20 Address = ${textWl}
 ✉️ Twitter = *${info.username_twitter}*
 🤝 Your Referral = ${refPoint} ${nameAccounts} 
-Referral link = https://t.me/test\\_creator\\_chain\\_airdrop\\_bot?start=${info.id_telegram}
+Referral link = *https://t.me/${botUserName}?start=${info.id_telegram}*
 ℹ️ For each person you invite and he/she completed tasks, you will get 2 Creator token.`;
     },
     sendAddress: `*⚠️ Please enter it correctly as you are only allowed to enter once.

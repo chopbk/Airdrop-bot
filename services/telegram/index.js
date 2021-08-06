@@ -43,6 +43,10 @@ class TeleBot {
         let env = process.env.NODE_ENV || "product";
         this.contactInfo = await getContactInfo(env);
         logger.debug(this.contactInfo);
+        let me = await this.bot.getMe();
+        this.botUsername = me.username;
+        this.botFirstName = me.first_name || "";
+        this.botLastName = me.last_name || "";
     };
     run = () => {
         // validate enter text username and wallet
@@ -149,7 +153,12 @@ class TeleBot {
     };
     isAccountDone = async (account, msg) => {
         if (account.is_done === true) {
-            logger.debug(`[isAccountDone] ${listText.done(msg.from.id)}`);
+            logger.debug(
+                `[isAccountDone] ${listText.done(
+                    msg.from.id,
+                    this.botUsername
+                )}`
+            );
             await this.bot.sendMessage(
                 msg.chat.id,
                 listText.done(msg.from.id),
@@ -339,10 +348,9 @@ class TeleBot {
             logger.debug(`[callbackQuery]: message ${info.is_done}`);
             if (info.is_done) {
                 this.bot.answerCallbackQuery(id);
-                console.log(listText.done(from.id));
                 return this.bot.sendMessage(
                     message.chat.id,
-                    listText.done(from.id),
+                    listText.done(from.id, this.botUsername),
                     keyboards.done
                 );
                 return;
@@ -363,7 +371,7 @@ class TeleBot {
                 await updateAccountInfo(from.id, { is_done: 1 });
                 return this.bot.sendMessage(
                     message.chat.id,
-                    listText.done(from.id),
+                    listText.done(from.id, this.botUsername),
                     keyboards.done
                 );
             }
@@ -543,7 +551,7 @@ class TeleBot {
             const textWl = listText.textWl(info);
             const infoButton = listText.infoButton(
                 info,
-                taskPoint,
+                this.botUsername,
                 refAccounts,
                 textWl
             );
