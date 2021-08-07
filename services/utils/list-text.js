@@ -16,8 +16,9 @@ module.exports = {
     step1: "1. Follow Chanel Creator Announcement",
     step2: "2. Join Group Creator Official [ENG]",
     step3: "3. Follow Creator Twitter",
+    enterUser: `Click here to enter your Twitter account`,
     step4: "4. Retweet, Like Creator Twitter post",
-    enterUser: `5. Click here to enter your twitter account before ${check}`,
+    enterRetweetLink: `Click here to enter Retweet link`,
     check,
     refresh,
     keyAirdrop,
@@ -46,13 +47,18 @@ Chat with us: ${info.telegram_group}`,
     startStep: `📢Our Airdrop rules
     \n👇 Please complete the following tasks, click on *${check}* to check progress
     \n⚠️ We will mannually check the participants, mandatory task must be completed. Unfinished will not get any tokens`,
-    validTwiiter:
+    invalidTwiiter:
         "Invalid twitter account please submit your twitter username with @:",
+    invalidRetweetLink: "Invalid twittwet Link",
     duplicateTw:
         "Twitter account is already in use. Please enter another account!",
     accTwOk: (acc) => {
         return `*${acc} ✅* \n\nYou have successfully bind your twitter account with CTR Reward Bot.
-Press 👇 *${check}* to check completed tasks.`;
+Press 👆 *${check}* to check completed tasks.`;
+    },
+    linkRetweetOk: (acc) => {
+        return `*${acc} ✅* \n\nYou have successfully add your retweet link.
+Press 👆 *${check}* to check completed tasks.`;
     },
     validWallet: "Invalid wallet address, please try again:",
     walletOk: (address) => {
@@ -71,6 +77,8 @@ See more information or need help, click keyboard *${keyRules}*.`;
     },
     enterTw:
         "If you are done step 3, enter twitter username so we can check it out.\nSend you twitter account starting with @:",
+    enterReTwLink:
+        "If you are done step 4, enter your retweet link so we can check it out.\nSend you retweet link",
     editTw: "You have been bind your twitter account. \nIf your want to change twitter username, send you twitter account starting with @:",
     addressWl: (address) => {
         return `Your wallet ERC-20 address: *${address}*`;
@@ -99,6 +107,7 @@ Referral link = *https://t.me/${botUserName}?start=${info.id_telegram}*
     twNotReTweet: "You haven't retweet post twitter",
     twNotLike: "You haven't like post twitter",
     twNotUser: "You must enter username twitter",
+    twNotRetweetLink: "You must enter your retweet link",
     teleNotFollow: "You haven't follow chanel telegram",
     teleNotJoin: "You haven't join group telegram",
     notFoundTw: "Not found user twitter, please try again.",
@@ -106,5 +115,6 @@ Referral link = *https://t.me/${botUserName}?start=${info.id_telegram}*
     EVENT_CHECK_MISSION: "check_mission",
     EVENT_REFRESH_ACCOUNT_INFO: "refresh_account_info",
     EVENT_USERNAME: "username_twitter",
+    EVENT_RETWEET: "retweet_twitter",
     EVENT_AIRDROP: "airdrop",
 };

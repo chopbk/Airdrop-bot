@@ -20,6 +20,7 @@ const {
     STEP_WALLET,
     STEP_NONE,
     STEP_VERIFY,
+    STEP_RETWEET,
 } = require("../database/model");
 
 const excludedText = [
@@ -161,7 +162,7 @@ class TeleBot {
             );
             await this.bot.sendMessage(
                 msg.chat.id,
-                listText.done(msg.from.id),
+                listText.done(msg.from.id, this.botUsername),
                 keyboards.done
             );
             return true;
@@ -173,14 +174,16 @@ class TeleBot {
         if (!res) return;
         // build message for airdrop
         const { button } = await this.buildButtonStep(msg.from.id);
+        logger.debug(`[handleAirdrop] button`);
         await this.bot.sendMessage(msg.chat.id, listText.startStep, button);
         // await this.isAccountDone(res, msg);
     };
     handleStart = async (msg) => {
         let res = await this.checkAccountInfo(msg);
+        logger.debug(`[handleStart] ${res}`);
         if (!res) return;
         let keyboard = res.is_done ? keyboards.done : keyboards.first;
-
+        logger.debug(keyboard);
         return this.bot.sendMessage(msg.chat.id, listText.welcome, keyboard);
     };
     handleAirdropInfo = async (msg) => {
@@ -277,7 +280,7 @@ class TeleBot {
                     logger.debug(`[checkValidTwitter]: ${isTwitterValid}`);
                     return this.bot.sendMessage(
                         msg.chat.id,
-                        listText.validTwiiter
+                        listText.invalidTwiiter
                     );
                 }
                 let idTw = msg.text.substr(1);
@@ -289,12 +292,15 @@ class TeleBot {
                     `[checkUniqueTwitter]: isDuplicate ${isDuplicate}`
                 );
                 if (isDuplicate)
-                    return bot.sendMessage(msg.chat.id, listText.duplicateTw);
+                    return this.bot.sendMessage(
+                        msg.chat.id,
+                        listText.duplicateTw
+                    );
 
                 await this.bot.sendMessage(
                     msg.chat.id,
                     listText.accTwOk(msg.text),
-                    keyboards.check
+                    keyboards.first
                 );
                 await updateAccountInfo(msg.from.id, {
                     step_input: STEP_NONE,
@@ -303,6 +309,36 @@ class TeleBot {
                 });
                 return;
             }
+            if (step === STEP_RETWEET) {
+                // let re = new RegExp(
+                //     "^https?://twitter.com/(?:#!/)?(w+)/status(?:es)?/(d+)(?:/.*)?$",
+                //     "i"
+                // );
+                let re = new RegExp(
+                    /^https?:\/\/twitter\.com\/(?:#!\/)?(\w+)\/status(?:es)?\/(\d+)(?:\/.*)?$/,
+                    "i"
+                );
+
+                let isRetweetLinkValid = re.test(msg.text.trim());
+                if (!isRetweetLinkValid) {
+                    logger.debug(`[checkValidTwitter]: ${isRetweetLinkValid}`);
+                    return this.bot.sendMessage(
+                        msg.chat.id,
+                        listText.invalidRetweetLink
+                    );
+                }
+                await this.bot.sendMessage(
+                    msg.chat.id,
+                    listText.linkRetweetOk(msg.text),
+                    keyboards.first
+                );
+                await updateAccountInfo(msg.from.id, {
+                    step_input: STEP_NONE,
+                    retweet_link: msg.text,
+                });
+                return;
+            }
+
             if (step === STEP_WALLET) {
                 if (!/^(0x){1}[0-9a-fA-F]{40}$/i.test(msg.text)) {
                     return this.bot.sendMessage(
@@ -339,14 +375,14 @@ class TeleBot {
                 message_id: message.message_id,
                 from,
             };
-            const info = await findOrCreate(msg);
-            if (!info) return;
+            const account = await findOrCreate(msg);
+            if (!account) return;
             if (data === listText.EVENT_REFRESH_ACCOUNT_INFO) {
-                await this.responseAccountInfo(info, msg, id);
+                await this.responseAccountInfo(account, msg, id);
                 return;
             }
-            logger.debug(`[callbackQuery]: message ${info.is_done}`);
-            if (info.is_done) {
+            logger.debug(`[callbackQuery]: message ${account.is_done}`);
+            if (account.is_done) {
                 this.bot.answerCallbackQuery(id);
                 return this.bot.sendMessage(
                     message.chat.id,
@@ -379,12 +415,23 @@ class TeleBot {
                 logger.debug(
                     `listText.EVENT_USERNAME ${listText.EVENT_USERNAME}`
                 );
-                let account = await getAccountInfo(from.id);
-                let asnwer = listText.enterTw;
+                let answer = listText.enterTw;
                 if (!!account && !!account.username_twitter)
-                    asnwer = listText.editTw;
-                this.bot.sendMessage(message.chat.id, asnwer);
+                    answer = listText.editTw;
+                this.bot.sendMessage(message.chat.id, answer);
                 await updateAccountInfo(from.id, { step_input: STEP_USERNAME });
+                this.bot.answerCallbackQuery(id, {
+                    text: "Add Username Twitter Success",
+                });
+                return;
+            }
+            if (data === listText.EVENT_RETWEET) {
+                logger.debug(
+                    `listText.EVENT_RETWEET ${listText.EVENT_RETWEET}`
+                );
+                let answer = listText.enterReTwLink;
+                this.bot.sendMessage(message.chat.id, answer);
+                await updateAccountInfo(from.id, { step_input: STEP_RETWEET });
                 this.bot.answerCallbackQuery(id, {
                     text: "Add Username Twitter Success",
                 });
@@ -428,19 +475,19 @@ class TeleBot {
             return { status: false, message: listText.teleNotJoin };
         }
     };
-    checkBindTwitter = async (userId) => {
-        const idTw = await getIDTwitter(userId);
+    checkBindTwitter = async (account = {}) => {
+        const idTw = account.id_twitter;
         if (!idTw) return { status: false, message: listText.twNotUser };
         return { status: true, message: "Done mission" };
     };
-    checkFollowTwitter = async (userId) => {
-        const idTw = await getIDTwitter(userId);
+    checkFollowTwitter = async (account = {}) => {
+        const idTw = account.id_twitter;
         if (!idTw) return { status: false, message: listText.twNotUser };
         return { status: true, message: "Done mission" };
     };
-    checkLikeRetweetTwitter = async (userId) => {
-        const idTw = await getIDTwitter(userId);
-        if (!idTw) return { status: false, message: listText.twNotUser };
+    checkRetweetTwitterLink = async (account = {}) => {
+        const idTw = account.retweet_link;
+        if (!idTw) return { status: false, message: listText.twNotRetweetLink };
         return { status: true, message: "Done mission" };
         return checkTwitter(idTw);
     };
@@ -461,15 +508,17 @@ class TeleBot {
         }
     };
     buildButtonStep = async (userId) => {
-        const listStepDone = {
+        let account = await getAccountInfo(userId);
+        let listStepDone = {
             0: await this.checkFollowChanel(userId),
             1: await this.checkJoinGr(userId),
-            2: await this.checkFollowTwitter(userId),
-            3: await this.checkLikeRetweetTwitter(userId),
-            4: await this.checkBindTwitter(userId),
+            2: await this.checkFollowTwitter(account),
+            3: await this.checkBindTwitter(account),
+            4: await this.checkRetweetTwitterLink(account),
+            5: await this.checkRetweetTwitterLink(account),
         };
         logger.debug(`[buildButtonStep] `);
-        logger.debug(listStepDone);
+        // logger.debug(listStepDone);
         // if (listStepDone[0].status && listStepDone[1].status) {
         //     listStepDone[2] = await this.checkStepTwitter(userId);
         // }
@@ -497,14 +546,21 @@ class TeleBot {
                     ],
                     [
                         {
-                            text: listText.step4,
-                            url: this.contactInfo.twitter_tweet,
+                            text: listText.enterUser,
+                            callback_data: listText.EVENT_USERNAME,
                         },
                     ],
                     [
                         {
-                            text: listText.enterUser,
-                            callback_data: listText.EVENT_USERNAME,
+                            text: listText.step4,
+                            url: this.contactInfo.twitter_tweet,
+                        },
+                    ],
+
+                    [
+                        {
+                            text: listText.enterRetweetLink,
+                            callback_data: listText.EVENT_RETWEET,
                         },
                     ],
                     [
@@ -517,7 +573,17 @@ class TeleBot {
             },
             parse_mode: "Markdown",
         };
-
+        // if (account.is_done)
+        //     tempStep.reply_markup = Object.assign(
+        //         tempStep.reply_markup,
+        //         keyboards.done.reply_markup
+        //     );
+        // else
+        //     tempStep.reply_markup = Object.assign(
+        //         tempStep.reply_markup,
+        //         keyboards.first.reply_markup
+        //     );
+        // console.log(tempStep);
         const result = { status: true, message: "" };
         Object.keys(listStepDone).forEach((step) => {
             if (listStepDone[step].status) {
@@ -576,7 +642,7 @@ class TeleBot {
             await this.bot.sendMessage(
                 msg.chat.id,
                 infoButton,
-                keyboards.point
+                keyboards.account_info
             );
         } catch (error) {
             logger.error(`responseAccountInfo ${error.message}`);

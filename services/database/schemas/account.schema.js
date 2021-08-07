@@ -26,7 +26,7 @@ const AccountSchema = new Schema(
             default: "",
         },
         ref: Number,
-        username_twitter: String,
+
         verify: {
             captcha: Number,
             try_time: {
@@ -39,7 +39,10 @@ const AccountSchema = new Schema(
                 default: "new",
             },
         },
+        username_twitter: String,
         id_twitter: String,
+        retweet_link: String,
+        retweet_links: [],
         is_done: {
             type: Boolean,
             default: false,

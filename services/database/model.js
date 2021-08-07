@@ -9,8 +9,9 @@ const ContactInfoModel = MongoDb.getContactInfoModel();
 const STEP_NONE = 0;
 const STEP_VERIFY = 1;
 const STEP_USERNAME = 2;
-const STEP_WALLET = 3;
-const STEP_CAPTCHA = 4;
+const STEP_RETWEET = 3;
+const STEP_WALLET = 4;
+const STEP_CAPTCHA = 5;
 
 module.exports = {
     getAccountInfo,
@@ -29,6 +30,7 @@ module.exports = {
     STEP_WALLET,
     STEP_CAPTCHA,
     STEP_NONE,
+    STEP_RETWEET,
     STEP_VERIFY,
 };
 async function getAllAccountInfo(id_telegram) {
