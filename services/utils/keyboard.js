@@ -95,9 +95,11 @@ const done = {
         resize_keyboard: true,
         one_time_keyboard: false,
         keyboard: [
-            [listText.keyStart, listText.keyAirdrop],
-            [listText.keyInfo, listText.keyWallet],
+            [listText.keyInfo, listText.keyAirdrop],
             [listText.keyAirdropInfo, listText.keyHelp],
+            // [listText.keyStart, listText.keyAirdrop],
+            // [listText.keyInfo, listText.keyWallet],
+            // [listText.keyAirdropInfo, listText.keyHelp],
         ],
     },
     parse_mode: "Markdown",
@@ -120,10 +122,11 @@ const first = {
     reply_markup: {
         resize_keyboard: true,
         one_time_keyboard: false,
-        keyboard: [
-            [listText.keyStart, listText.keyAirdrop],
-            [listText.keyHelp],
-        ],
+        keyboard: [[listText.keyAirdrop, listText.keyHelp]],
+        // keyboard: [
+        //     [listText.keyStart, listText.keyAirdrop],
+        //     [listText.keyHelp],
+        // ],
     },
     parse_mode: "Markdown",
 };

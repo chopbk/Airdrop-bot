@@ -52,10 +52,10 @@ class TeleBot {
     run = () => {
         // validate enter text username and wallet
         this.bot.onText(/\.*/, this.handleText);
-        this.bot.onText(/\/start/, this.handleStart);
+        this.bot.onText(/\/start/, this.handleAirdrop);
         this.bot.onText(/\/airdrop/, this.handleAirdrop);
         // =============== list event keyboard
-        this.bot.onText(new RegExp(listText.keyStart), this.handleStart);
+        this.bot.onText(new RegExp(listText.keyStart), this.handleAirdrop);
         this.bot.onText(new RegExp(listText.keyAirdrop), this.handleAirdrop);
         this.bot.onText(
             new RegExp(listText.keyAirdropInfo),
@@ -66,10 +66,10 @@ class TeleBot {
             this.handleAccountInfoButton
         );
         this.bot.onText(new RegExp(listText.keyHelp), this.handleHelpContact);
-        this.bot.onText(
-            new RegExp(listText.keyWallet),
-            this.handleButtonWallet
-        );
+        // this.bot.onText(
+        //     new RegExp(listText.keyWallet),
+        //     this.handleButtonWallet
+        // );
         this.bot.on("polling_error", (error) => logger.error(error.message));
         this.bot.on("callback_query", this.handleCallBackQuerry);
         this.bot.onText(new RegExp("/clear"), this.handleClearCommand);
@@ -160,6 +160,7 @@ class TeleBot {
                     this.botUsername
                 )}`
             );
+
             await this.bot.sendMessage(
                 msg.chat.id,
                 listText.done(msg.from.id, this.botUsername),
@@ -170,6 +171,14 @@ class TeleBot {
         return false;
     };
     handleAirdrop = async (msg) => {
+        if (!msg.from.username) {
+            await this.bot.sendMessage(
+                msg.chat.id,
+                listText.addUsername,
+                keyboards.first
+            );
+            return;
+        }
         let res = await this.checkAccountInfo(msg);
         if (!res) return;
         // build message for airdrop
@@ -349,7 +358,7 @@ class TeleBot {
                 await this.bot.sendMessage(
                     msg.chat.id,
                     listText.walletOk(msg.text),
-                    keyboards.done
+                    keyboards.first
                 );
                 await updateAccountInfo(msg.from.id, {
                     step_input: STEP_NONE,
@@ -421,7 +430,24 @@ class TeleBot {
                 this.bot.sendMessage(message.chat.id, answer);
                 await updateAccountInfo(from.id, { step_input: STEP_USERNAME });
                 this.bot.answerCallbackQuery(id, {
-                    text: "Add Username Twitter Success",
+                    text: "Enter Your Username Twitter",
+                });
+                return;
+            }
+            if (data === listText.EVENT_WALLET) {
+                logger.debug(`listText.EVENT_WALLET ${listText.EVENT_WALLET}`);
+                if (!!account && !!account.wallet_address) {
+                    this.bot.answerCallbackQuery(id, {
+                        text: "You have done this",
+                    });
+                    return;
+                }
+                this.bot.sendMessage(message.chat.id, listText.sendAddress, {
+                    parse_mode: "Markdown",
+                });
+                await updateAccountInfo(from.id, { step_input: STEP_WALLET });
+                this.bot.answerCallbackQuery(id, {
+                    text: "Enter Your wallet address",
                 });
                 return;
             }
@@ -429,11 +455,17 @@ class TeleBot {
                 logger.debug(
                     `listText.EVENT_RETWEET ${listText.EVENT_RETWEET}`
                 );
+                if (!!account && !!account.retweet_link) {
+                    this.bot.answerCallbackQuery(id, {
+                        text: "You have done this",
+                    });
+                    return;
+                }
                 let answer = listText.enterReTwLink;
                 this.bot.sendMessage(message.chat.id, answer);
                 await updateAccountInfo(from.id, { step_input: STEP_RETWEET });
                 this.bot.answerCallbackQuery(id, {
-                    text: "Add Username Twitter Success",
+                    text: "Enter your retweet link",
                 });
                 return;
             }
@@ -475,11 +507,18 @@ class TeleBot {
             return { status: false, message: listText.teleNotJoin };
         }
     };
+
+    checkBindWalletAddress = async (account = {}) => {
+        const idTw = account.wallet_address;
+        if (!idTw) return { status: false, message: listText.walletNotFound };
+        return { status: true, message: "Done mission" };
+    };
     checkBindTwitter = async (account = {}) => {
         const idTw = account.id_twitter;
         if (!idTw) return { status: false, message: listText.twNotUser };
         return { status: true, message: "Done mission" };
     };
+
     checkFollowTwitter = async (account = {}) => {
         const idTw = account.id_twitter;
         if (!idTw) return { status: false, message: listText.twNotUser };
@@ -516,6 +555,7 @@ class TeleBot {
             3: await this.checkBindTwitter(account),
             4: await this.checkRetweetTwitterLink(account),
             5: await this.checkRetweetTwitterLink(account),
+            6: await this.checkBindWalletAddress(account),
         };
         logger.debug(`[buildButtonStep] `);
         // logger.debug(listStepDone);
@@ -556,11 +596,16 @@ class TeleBot {
                             url: this.contactInfo.twitter_tweet,
                         },
                     ],
-
                     [
                         {
                             text: listText.enterRetweetLink,
                             callback_data: listText.EVENT_RETWEET,
+                        },
+                    ],
+                    [
+                        {
+                            text: listText.enterWallet,
+                            callback_data: listText.EVENT_WALLET,
                         },
                     ],
                     [
@@ -583,7 +628,7 @@ class TeleBot {
         //         tempStep.reply_markup,
         //         keyboards.first.reply_markup
         //     );
-        // console.log(tempStep);
+
         const result = { status: true, message: "" };
         Object.keys(listStepDone).forEach((step) => {
             if (listStepDone[step].status) {
@@ -596,6 +641,7 @@ class TeleBot {
                 }
             }
         });
+        console.log(tempStep.reply_markup.inline_keyboard);
         return { button: tempStep, result };
     };
     responseAccountInfo = async (info, msg, id = false) => {
@@ -613,7 +659,7 @@ class TeleBot {
             //     if (listStepDone[key].status) taskPoint += 1;
             // });
             const refAccounts = await getInfoRef(msg.from.id);
-
+            let refPoint = refAccounts.length;
             const textWl = listText.textWl(info);
             const infoButton = listText.infoButton(
                 info,
