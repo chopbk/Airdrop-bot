@@ -42,6 +42,10 @@ const ContactSchema = new Schema(
             type: String,
             default: "https://creatorplatfor1.medium.com/",
         },
+        airdrop_token: {
+           type: Number,
+            default: 0,
+        },
     },
     {
         versionKey: false,

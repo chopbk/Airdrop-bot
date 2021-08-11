@@ -364,7 +364,6 @@ class TeleBot {
                     step_input: STEP_NONE,
                     wallet_address: msg.text,
                 });
-                return;
             }
         } catch (error) {
             logger.error(error.message);

@@ -92,7 +92,7 @@ See more information or need help, click keyboard *${keyRules}*.`;
     },
     infoButton: (info, botUserName, refAccounts, textWl) => {
         let refPoint = refAccounts.length;
-        let balance = 10 + refPoint * 2;
+        let balance = (info.airdrop_token || 0) + refPoint * 2;
         let nameAccounts = "";
         refAccounts.forEach(
             (account) => (nameAccounts += `@${account.username_telegram} `)
@@ -101,9 +101,9 @@ See more information or need help, click keyboard *${keyRules}*.`;
 \n💎 *Telegram* = *@${info.username_telegram}* 
 ✉️ *Twitter* = *${info.username_twitter}*
 💳 *ERC-20 Address* = ${textWl}
-\n💵 *Total token* = ${balance}. \nYou have earn 10 Creator token from task and ${
-            refPoint * 2
-        } token from referral.
+\n💵 *Total token* = ${balance}. \nYou have earn ${
+            info.airdrop_token || 0
+        } Creator token from task and ${refPoint * 2} token from referral.
 \n🤝*Your Referral*= ${refPoint} ${nameAccounts} 
 Referral link = *https://t.me/${botUserName}?start=${info.id_telegram}*`;
         //ℹ️ For each person you invite and he/she completed tasks, you will get 2 Creator token.
